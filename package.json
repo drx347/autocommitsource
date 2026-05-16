@@ -1,0 +1,21 @@
+{
+  "name": "auto-commit-bot",
+  "version": "1.0.0",
+  "description": "Auto Commit Bot untuk membuat commit otomatis ke GitHub.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "local": "node src/index.js --no-push"
+  },
+  "keywords": [
+    "auto-commit",
+    "git",
+    "github"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "simple-git": "^3.27.0"
+  }
+}
