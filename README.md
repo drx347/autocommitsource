@@ -1,6 +1,6 @@
 # Auto Commit Bot
 
-Script Node.js untuk membuat commit otomatis ke GitHub berdasarkan link repo yang dimasukkan user.
+a side project by @exotickic
 
 ## Instalasi
 
@@ -23,7 +23,7 @@ Masukkan link repo GitHub yang mau di-auto commit
 
 Mau berapa commit?
 
-> 50
+> isi jumlah commit yang di inginkan
 
 Branch yang mau dipakai?
 (default: main)
@@ -47,3 +47,6 @@ npm run local
 ```
 
 Mode ini tetap meminta link repo dan membuat commit lokal di hasil clone, tetapi tidak menjalankan `git push`.
+
+
+Author:@drx347
