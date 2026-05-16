@@ -1,26 +1,35 @@
-import { askCommitCount } from './core/askCommitCount.js';
+import { askQuestions } from './core/askQuestions.js';
 import { generateCommit } from './core/generateCommit.js';
 import { prepareGitRepository } from './core/prepareGitRepository.js';
 
 async function main() {
-  const skipPush = process.argv.includes('--no-push');
+  const forcedSkipPush = process.argv.includes('--no-push');
 
   console.log('Auto Commit Bot');
   console.log('================\n');
 
-  await prepareGitRepository({ skipPush });
+  const answers = await askQuestions({ forcedSkipPush });
 
-  if (skipPush) {
-    console.log('Mode lokal aktif: commit dibuat tanpa git push.\n');
+  const target = await prepareGitRepository({
+    repoUrl: answers.repoUrl,
+    branch: answers.branch,
+  });
+
+  console.log('\nKonfigurasi');
+  console.log(`Remote : ${answers.repoUrl}`);
+  console.log(`Folder : ${target.repoPath}`);
+  console.log(`Branch : ${answers.branch}`);
+  console.log(`Push   : ${answers.shouldPush ? 'ya' : 'tidak'}\n`);
+
+  for (let currentCommit = 1; currentCommit <= answers.totalCommits; currentCommit += 1) {
+    await generateCommit(currentCommit, answers.totalCommits, {
+      repoPath: target.repoPath,
+      branch: answers.branch,
+      shouldPush: answers.shouldPush,
+    });
   }
 
-  const totalCommits = await askCommitCount();
-
-  for (let currentCommit = 1; currentCommit <= totalCommits; currentCommit += 1) {
-    await generateCommit(currentCommit, totalCommits, { skipPush });
-  }
-
-  console.log(skipPush ? '\nSelesai membuat commit lokal.' : '\nSelesai push ke GitHub.');
+  console.log(answers.shouldPush ? '\nSelesai push ke GitHub.' : '\nSelesai membuat commit lokal.');
 }
 
 main().catch((error) => {

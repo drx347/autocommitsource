@@ -1,8 +1,17 @@
+import fs from 'fs';
+import path from 'path';
 import simpleGit from 'simple-git';
 
-const git = simpleGit();
+function getRepoName(repoUrl) {
+  const normalized = repoUrl.replace(/\.git$/i, '');
+  return normalized.split(/[/:]/).pop();
+}
 
-async function hasConfigValue(key) {
+function getRepoPath(repoUrl) {
+  return path.resolve('target-repos', getRepoName(repoUrl));
+}
+
+async function hasConfigValue(git, key) {
   try {
     const value = await git.raw(['config', '--get', key]);
     return value.trim().length > 0;
@@ -11,9 +20,9 @@ async function hasConfigValue(key) {
   }
 }
 
-async function ensureCommitIdentity() {
-  const hasUserName = await hasConfigValue('user.name');
-  const hasUserEmail = await hasConfigValue('user.email');
+async function ensureCommitIdentity(git) {
+  const hasUserName = await hasConfigValue(git, 'user.name');
+  const hasUserEmail = await hasConfigValue(git, 'user.email');
 
   if (!hasUserName) {
     await git.addConfig('user.name', 'Auto Commit Bot');
@@ -24,29 +33,62 @@ async function ensureCommitIdentity() {
   }
 }
 
-async function ensureMainBranch() {
-  await git.raw(['branch', '-M', 'main']);
-}
-
-async function hasOriginRemote() {
+async function ensureOrigin(git, repoUrl) {
   const remotes = await git.getRemotes(true);
-  return remotes.some((remote) => remote.name === 'origin');
+  const origin = remotes.find((remote) => remote.name === 'origin');
+
+  if (!origin) {
+    await git.addRemote('origin', repoUrl);
+    return;
+  }
+
+  if (origin.refs.fetch !== repoUrl) {
+    await git.remote(['set-url', 'origin', repoUrl]);
+  }
 }
 
-export async function prepareGitRepository({ skipPush = false } = {}) {
+async function ensureBranch(git, branch) {
+  try {
+    await git.checkout(branch);
+  } catch {
+    await git.checkoutLocalBranch(branch);
+  }
+}
+
+async function cloneRepository(repoUrl, repoPath) {
+  const rootGit = simpleGit();
+
+  fs.mkdirSync(path.dirname(repoPath), { recursive: true });
+  console.log(`Clone repo ke: ${repoPath}`);
+  await rootGit.clone(repoUrl, repoPath);
+}
+
+async function ensureLocalRepository(repoUrl, repoPath) {
+  if (!fs.existsSync(repoPath)) {
+    await cloneRepository(repoUrl, repoPath);
+    return;
+  }
+
+  const git = simpleGit({ baseDir: repoPath });
   const isRepo = await git.checkIsRepo();
 
   if (!isRepo) {
-    console.log('Git repository belum ada. Membuat repository lokal...');
-    await git.init();
+    throw new Error(`Folder target sudah ada tapi bukan Git repository: ${repoPath}`);
   }
 
-  await ensureMainBranch();
-  await ensureCommitIdentity();
+  console.log(`Repo lokal ditemukan: ${repoPath}`);
+}
 
-  if (!skipPush && !(await hasOriginRemote())) {
-    throw new Error(
-      'Remote origin belum diset. Jalankan: git remote add origin <URL_REPOSITORY_GITHUB>, lalu coba lagi. Untuk tes lokal gunakan: npm run local'
-    );
-  }
+export async function prepareGitRepository({ repoUrl, branch }) {
+  const repoPath = getRepoPath(repoUrl);
+
+  await ensureLocalRepository(repoUrl, repoPath);
+
+  const git = simpleGit({ baseDir: repoPath });
+
+  await ensureOrigin(git, repoUrl);
+  await ensureBranch(git, branch);
+  await ensureCommitIdentity(git);
+
+  return { repoPath };
 }

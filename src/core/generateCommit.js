@@ -2,9 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import simpleGit from 'simple-git';
 
-const git = simpleGit();
-const dataFilePath = path.resolve('commits', 'data.txt');
-
 const commitMessages = [
   'update activity log',
   'refresh commit data',
@@ -29,16 +26,19 @@ function wait(ms) {
   });
 }
 
-function updateCommitFile(commitNumber) {
+function updateCommitFile(repoPath, commitNumber) {
   const timestamp = new Date().toISOString();
   const content = `Commit ke-${commitNumber} dibuat pada ${timestamp}\n`;
+  const dataFilePath = path.resolve(repoPath, 'commits', 'data.txt');
 
   fs.mkdirSync(path.dirname(dataFilePath), { recursive: true });
   fs.appendFileSync(dataFilePath, content, 'utf8');
 }
 
 export async function generateCommit(commitNumber, totalCommits, options = {}) {
-  updateCommitFile(commitNumber);
+  const git = simpleGit({ baseDir: options.repoPath });
+
+  updateCommitFile(options.repoPath, commitNumber);
 
   const message = getRandomCommitMessage(commitNumber);
 
@@ -46,16 +46,16 @@ export async function generateCommit(commitNumber, totalCommits, options = {}) {
     await git.add('.');
     await git.commit(message);
 
-    if (!options.skipPush) {
-      await git.push('origin', 'main');
+    if (options.shouldPush) {
+      await git.push('origin', options.branch);
     }
 
-    const status = options.skipPush ? 'Commit lokal berhasil' : 'Commit berhasil';
+    const status = options.shouldPush ? 'Commit berhasil' : 'Commit lokal berhasil';
     console.log(`[${commitNumber}/${totalCommits}] ${status} - ${message}`);
   } catch (error) {
     console.error(`[${commitNumber}/${totalCommits}] Commit gagal`);
     console.error(`Pesan error: ${error.message}`);
-    throw new Error('Git push atau commit gagal. Periksa remote, branch main, dan koneksi GitHub.');
+    throw new Error(`Git commit atau push gagal. Periksa repo, remote origin, branch ${options.branch}, dan koneksi GitHub.`);
   }
 
   if (commitNumber < totalCommits) {
