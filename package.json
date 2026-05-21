@@ -1,19 +1,21 @@
 {
   "name": "auto-commit-bot",
   "version": "1.0.0",
-  "description": "Auto Commit Bot untuk membuat commit otomatis ke GitHub.",
+  "description": "Auto Commit Bot for creating automated commits to GitHub.",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "local": "node src/index.js --no-push"
+    "local": "node src/index.js --no-push",
+    "powershell": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\auto-commit.ps1",
+    "powershell:local": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\auto-commit.ps1 -NoPush"
   },
   "keywords": [
     "auto-commit",
     "git",
     "github"
   ],
-  "author": "",
+  "author": "@exotickic",
   "license": "MIT",
   "dependencies": {
     "simple-git": "^3.27.0"

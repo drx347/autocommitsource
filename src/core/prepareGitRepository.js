@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import simpleGit from 'simple-git';
+import { colors, label, theme } from './hackerTheme.js';
 
 function getRepoName(repoUrl) {
   const normalized = repoUrl.replace(/\.git$/i, '');
@@ -59,7 +60,7 @@ async function cloneRepository(repoUrl, repoPath) {
   const rootGit = simpleGit();
 
   fs.mkdirSync(path.dirname(repoPath), { recursive: true });
-  console.log(`Clone repo ke: ${repoPath}`);
+  console.log(`${label('CLONE')} ${theme('target', colors.dim)} ${repoPath}`);
   await rootGit.clone(repoUrl, repoPath);
 }
 
@@ -73,10 +74,10 @@ async function ensureLocalRepository(repoUrl, repoPath) {
   const isRepo = await git.checkIsRepo();
 
   if (!isRepo) {
-    throw new Error(`Folder target sudah ada tapi bukan Git repository: ${repoPath}`);
+    throw new Error(`Target folder already exists but is not a Git repository: ${repoPath}`);
   }
 
-  console.log(`Repo lokal ditemukan: ${repoPath}`);
+  console.log(`${label('CACHE')} ${theme('local repository found', colors.dim)} ${repoPath}`);
 }
 
 export async function prepareGitRepository({ repoUrl, branch }) {

@@ -1,52 +1,110 @@
 # Auto Commit Bot
 
-a side project by @exotickic
+A Node.js script for creating automated commits to GitHub based on the repository URL entered by the user.
 
-## Instalasi
+A side project by @exotickic.
+
+```text
+============================================================
+=                    AUTO COMMIT BOT                       =
+=                                                          =
+=   Author : @exotickic                                    =
+=   GitHub : drx347                                        =
+=   Mode   : GitHub Commit Injector                        =
+============================================================
+```
+
+## Node.js Setup
 
 ```bash
 npm install
 ```
 
-## Menjalankan
+## Run
 
 ```bash
 npm start
 ```
 
-Program akan meminta input:
+## Run with PowerShell on Windows
+
+The easiest way on Windows:
 
 ```text
-Masukkan link repo GitHub yang mau di-auto commit
+Double-click auto-commit.bat
+```
 
-> https://github.com/username/nama-repo.git
+Local mode without push:
 
-Mau berapa commit?
+```text
+Double-click auto-commit-local.bat
+```
 
-> isi jumlah commit yang di inginkan
+Or run it manually from PowerShell:
 
-Branch yang mau dipakai?
+```powershell
+.\auto-commit.ps1
+```
+
+The PowerShell script runs directly with PowerShell and Git on the device, without needing to open the Node.js terminal flow.
+The device only needs Git and GitHub access for the target repository.
+
+Or through npm:
+
+```powershell
+npm run powershell
+```
+
+Local mode without push through PowerShell:
+
+```powershell
+.\auto-commit.ps1 -NoPush
+```
+
+Or:
+
+```powershell
+npm run powershell:local
+```
+
+If PowerShell blocks the script because of the execution policy, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\auto-commit.ps1
+```
+
+The program will ask for input:
+
+```text
+Enter the GitHub repository URL to auto commit
+
+> https://github.com/username/repository-name.git
+
+How many commits do you want?
+
+> 50
+
+Which branch should be used?
 (default: main)
 
 > main
 
-Mau langsung push ke repo tersebut? (y/n)
+Push directly to this repository? (y/n)
 (default: y)
 
 > y
 ```
 
-Bot akan clone repo tersebut ke folder `target-repos/`. Setiap commit akan mengubah `commits/data.txt` di dalam repo target, menjalankan `git add .`, membuat commit dengan pesan acak, lalu push ke branch yang dipilih.
+The bot will clone the repository into the `target-repos/` folder. Each commit updates `commits/data.txt` inside the target repository, runs `git add .`, creates a commit with a random message, then pushes to the selected branch.
 
-Pastikan akun Git di komputer sudah punya akses push ke repo tersebut. Untuk private repo, gunakan HTTPS dengan credential/token yang sudah tersimpan atau SSH URL seperti `git@github.com:user/repo.git`.
+Make sure the Git account on the computer has push access to that repository. For private repositories, use HTTPS with saved credentials/token or an SSH URL such as `git@github.com:user/repo.git`.
 
-## Tes Lokal Tanpa Push
+## Local Test Without Push
 
 ```bash
 npm run local
 ```
 
-Mode ini tetap meminta link repo dan membuat commit lokal di hasil clone, tetapi tidak menjalankan `git push`.
+This mode still asks for a repository URL and creates local commits in the cloned repository, but it does not run `git push`.
 
-
-Author:@drx347
+Author: @drx347
